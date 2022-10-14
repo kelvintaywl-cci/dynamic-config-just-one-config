@@ -37,13 +37,14 @@ jobs:
 
 workflows:
   setup:
+    when: << pipeline.parameters.is-setup >>
     jobs:
       - path-filtering/filter:
           base-revision: main
           # use same/original config
           config-path: .circleci/config.yml
           mapping: |
-            .*     is-setup   false
+            .* is-setup false
             foo/.* build-foo true
             bar/.* build-bar true
 
