@@ -1,0 +1,3 @@
+# bar
+
+Directory for bar.

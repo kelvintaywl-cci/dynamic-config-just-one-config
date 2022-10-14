@@ -1,0 +1,60 @@
+version: 2.1
+
+parameters:
+  is-setup:
+    type: boolean
+    default: true
+  build-foo:
+    type: boolean
+    default: false
+  build-bar:
+    type: boolean
+    default: false
+
+setup: << pipeline.parameters.is-setup >>
+
+orbs:
+  path-filtering: circleci/path-filtering@0.1.3
+
+executors:
+  default:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+
+jobs:
+  for-folder:
+    parameters:
+      folder:
+        type: string
+    executor: default
+    working_directory: ~/project/<< parameters.folder >>
+    steps:
+      - checkout:
+          path: ~/project
+      - run: |
+          cat README.md
+
+workflows:
+  setup:
+    jobs:
+      - path-filtering/filter:
+          base-revision: main
+          # use same/original config
+          config-path: .circleci/config.yml
+          mapping: |
+            .*     is-setup   false
+            foo/.* build-foo true
+            bar/.* build-bar true
+
+  foo:
+    when: << pipeline.parameters.build-foo >>
+    jobs:
+      - for-folder:
+          folder: foo
+  bar:
+    when: << pipeline.parameters.build-bar >>
+
+    jobs:
+      - for-folder:
+          folder: bar
